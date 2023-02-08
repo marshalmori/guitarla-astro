@@ -1,14 +1,25 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Guitarra from "../components/Guitarra.astro";
+import Post from "../components/Post.astro";
+import Curso from "../components/Curso.astro";
+import ComponenteReact from "../components/ComponenteReact";
 
 const urlGuitarras = `${
   import.meta.env.PUBLIC_API_URL
 }/guitarras?populate=imagen`;
 
-const [resGuitarras] = await Promise.all([fetch(urlGuitarras)]);
+const urlBlog = `${import.meta.env.PUBLIC_API_URL}/posts?populate=imagen`;
+const urlCurso = `${import.meta.env.PUBLIC_API_URL}/curso?populate=imagen`;
 
-const [{ data: guitarras }] = await Promise.all([resGuitarras.json()]);
+const [resGuitarras, resBlog, resCurso] = await Promise.all([
+  fetch(urlGuitarras),
+  fetch(urlBlog),
+  fetch(urlCurso),
+]);
+
+const [{ data: guitarras }, { data: posts }, { data: curso }] =
+  await Promise.all([resGuitarras.json(), resBlog.json(), resCurso.json()]);
 ---
 
 <Layout
@@ -33,6 +44,31 @@ const [{ data: guitarras }] = await Promise.all([resGuitarras.json()]);
       }
     </div>
   </main>
+
+  <Curso
+    titulo={curso.attributes.titulo}
+    contenido={curso.attributes.contenido}
+    imagen={curso.attributes.imagen.data.attributes.url}
+  />
+
+  <ComponenteReact />
+
+  <section class="contenedor">
+    <h2 class="heading">Blog</h2>
+    <div class="grid">
+      {
+        posts?.map((post) => (
+          <Post
+            titulo={post.attributes.titulo}
+            publishedAt={post.attributes.publishedAt}
+            contenido={post.attributes.contenido}
+            imagen={post.attributes.imagen.data.attributes.formats.medium.url}
+            url={post.attributes.url}
+          />
+        ))
+      }
+    </div>
+  </section>
 </Layout>
 
 <style></style>
